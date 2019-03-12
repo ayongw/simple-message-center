@@ -13,10 +13,40 @@
     <groupId>com.github.ayongw</groupId>
     <artifactId>simple-message-center</artifactId>
     <version>1.0.0</version>
+    <name>Simple Message Center</name>
+    <url>https://github.com/ayongw/simple-message-center</url>
+    <description>a simple message center jar</description>
+
+    <scm>
+        <url>https://github.com/ayongw/simple-message-center</url>
+        <connection>https://github.com/ayongw/simple-message-center.git</connection>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>ayongw</id>
+            <name>ayongw</name>
+            <email>jiangguangtao@foxmail.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
 
     <properties>
         <java.version>1.7</java.version>
     </properties>
+
     <dependencies>
 
         <!--test only deps-->

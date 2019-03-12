@@ -16,6 +16,10 @@ public class SimpleMessageCenter {
 
     private static SimpleMessageCenter defaultCenter;
 
+    private SimpleMessageCenter() {
+
+    }
+
     /**
      * 获取默认的消息通知中心
      *
@@ -30,6 +34,17 @@ public class SimpleMessageCenter {
             }
         }
         return defaultCenter;
+    }
+
+    /**
+     * 获取一个新的消息中心，使用用此方法，可以区分默认的消息中心
+     * <p>
+     * 一般不使用此方法
+     *
+     * @return 新的消息中心对象
+     */
+    public static SimpleMessageCenter getNewCenter() {
+        return new SimpleMessageCenter();
     }
 
     /**
@@ -103,14 +118,7 @@ public class SimpleMessageCenter {
      * @return true发送成功，并有消费者处理
      */
     public boolean postMessage(String msgName, Object holder) {
-        String key = getObserverKey(msgName, holder);
-        MyComboObserver directObserver = messageObservers.get(key);
-
-        if (null == directObserver) {
-            return false;
-        }
-
-        return directObserver.postMessage(msgName, holder, new HashMap());
+        return postMessage(msgName, holder, new HashMap());
     }
 
     /**
@@ -124,11 +132,46 @@ public class SimpleMessageCenter {
     public boolean postMessage(String msgName, Object holder, Map userInfo) {
         String key = getObserverKey(msgName, holder);
         MyComboObserver directObserver = messageObservers.get(key);
-        if (null == directObserver) {
-            return false;
+
+        boolean directFlag = false;
+        if (null != directObserver) {
+            directFlag = directObserver.postMessage(msgName, holder, userInfo);
         }
 
-        return directObserver.postMessage(msgName, holder, userInfo);
+        String fuzzyKey = getFuzzyObserverKey(msgName, holder);
+        if (null == fuzzyKey) {
+            return directFlag;
+        }
+
+        MyComboObserver fuzzyObserver = messageObservers.get(fuzzyKey);
+        if (null == fuzzyObserver) {
+            return directFlag;
+        }
+
+        boolean fuzzyFlag = fuzzyObserver.postMessage(msgName, holder, userInfo);
+
+        return directFlag || fuzzyFlag;
+    }
+
+    /**
+     * 发送消息时，获取模糊的key，用于发送消息到大的监听类上。
+     *
+     * @param msgName 消息名称
+     * @param holder  消息发送者标识
+     * @return null表示没有相应的模糊监听key
+     */
+    private String getFuzzyObserverKey(String msgName, Object holder) {
+        if (null == holder) {
+            return null;
+        }
+
+        if (CharSequence.class.isAssignableFrom(holder.getClass())) {
+            if (SimpleUtils.isBlank(holder.toString())) {
+                return null;
+            }
+        }
+
+        return getObserverKey(msgName, null);
     }
 
     /**

@@ -9,6 +9,9 @@ import java.util.UUID;
 
 /**
  * 消息通知中心类
+ * <p>
+ * msgName+null   表示接收所有的msgName标识的消息<br/>
+ * msgName+holder 表示只接收发送者为holder的msgName的消息
  */
 public class SimpleMessageCenter {
     // 事件-->事件监听列表
@@ -123,6 +126,9 @@ public class SimpleMessageCenter {
 
     /**
      * 发送一个消息
+     *
+     * msgName+null     只发送全局消息
+     * msgName+holder   发送到holder下指定msgName的监听，同时发送到全局msgName监听下。
      *
      * @param msgName  消息名称
      * @param holder   消息发送者标识 可以为null

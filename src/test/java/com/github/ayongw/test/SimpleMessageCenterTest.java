@@ -1,8 +1,8 @@
 package com.github.ayongw.test;
 
-import com.github.ayongw.androidmessagecenter.SimpleMessage;
-import com.github.ayongw.androidmessagecenter.SimpleMessageCenter;
-import com.github.ayongw.androidmessagecenter.SimpleMessageObserver;
+import com.github.ayongw.simplemessagecenter.SimpleMessage;
+import com.github.ayongw.simplemessagecenter.SimpleMessageCenter;
+import com.github.ayongw.simplemessagecenter.SimpleMessageObserver;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

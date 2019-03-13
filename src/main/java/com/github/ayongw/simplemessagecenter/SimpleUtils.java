@@ -1,4 +1,4 @@
-package com.github.ayongw.androidmessagecenter;
+package com.github.ayongw.simplemessagecenter;
 
 /**
  * @author jiangguangtao

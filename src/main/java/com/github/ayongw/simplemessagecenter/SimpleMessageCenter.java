@@ -1,7 +1,7 @@
-package com.github.ayongw.androidmessagecenter;
+package com.github.ayongw.simplemessagecenter;
 
-import com.github.ayongw.androidmessagecenter.inner.MyComboObserver;
-import com.github.ayongw.androidmessagecenter.inner.MyMessageObserverWrapper;
+import com.github.ayongw.simplemessagecenter.inner.MyComboObserver;
+import com.github.ayongw.simplemessagecenter.inner.MyMessageObserverWrapper;
 
 import java.util.HashMap;
 import java.util.Map;

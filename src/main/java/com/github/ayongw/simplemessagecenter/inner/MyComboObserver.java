@@ -1,6 +1,6 @@
-package com.github.ayongw.androidmessagecenter.inner;
+package com.github.ayongw.simplemessagecenter.inner;
 
-import com.github.ayongw.androidmessagecenter.SimpleMessage;
+import com.github.ayongw.simplemessagecenter.SimpleMessage;
 
 import java.util.ArrayList;
 import java.util.Iterator;

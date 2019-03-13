@@ -1,7 +1,7 @@
-package com.github.ayongw.androidmessagecenter.inner;
+package com.github.ayongw.simplemessagecenter.inner;
 
 
-import com.github.ayongw.androidmessagecenter.SimpleMessageObserver;
+import com.github.ayongw.simplemessagecenter.SimpleMessageObserver;
 
 /**
  * 内部使用的类

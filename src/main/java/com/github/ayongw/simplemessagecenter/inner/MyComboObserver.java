@@ -60,10 +60,12 @@ public class MyComboObserver {
         }
         final SimpleMessage myMessage = new SimpleMessage(msgName, holder, userInfo);
 
+        final List<MyMessageObserverWrapper> sendObservers = new ArrayList<>(observers);
+
         new Thread(new Runnable() {
             @Override
             public void run() {
-                for (MyMessageObserverWrapper observerWrapper : observers) {
+                for (MyMessageObserverWrapper observerWrapper : sendObservers) {
                     if (null != observerWrapper) {
                         observerWrapper.getMessageObserver().onMessage(myMessage);
                     }
@@ -71,7 +73,7 @@ public class MyComboObserver {
             }
         }).start();
 
-        return observers.size();
+        return sendObservers.size();
     }
 
     /**

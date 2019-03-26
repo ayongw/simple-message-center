@@ -14,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * 消息通知中心类
  * <p> msgName+null   表示接收所有的msgName标识的消息</p>
  * <p> msgName+holder 表示只接收发送者为holder的msgName的消息</p>
+ * @author jiangguangtao
  */
 public class SimpleMessageCenter {
     private static final String KEY_PREFIX = "sok:";

@@ -8,12 +8,12 @@ import java.util.Map;
 public class SimpleMessage {
     private String name;
     private Object holder;
-    private Map userInfo;
+    private Map<String, Object> userInfo;
 
     public SimpleMessage() {
     }
 
-    public SimpleMessage(String name, Object holder, Map userInfo) {
+    public SimpleMessage(String name, Object holder, Map<String, Object> userInfo) {
         this.name = name;
         this.holder = holder;
         this.userInfo = userInfo;
@@ -35,11 +35,11 @@ public class SimpleMessage {
         this.holder = holder;
     }
 
-    public Map getUserInfo() {
+    public Map<String, Object> getUserInfo() {
         return userInfo;
     }
 
-    public void setUserInfo(Map userInfo) {
+    public void setUserInfo(Map<String, Object> userInfo) {
         this.userInfo = userInfo;
     }
 

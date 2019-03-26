@@ -14,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * 消息通知中心类
  * <p> msgName+null   表示接收所有的msgName标识的消息</p>
  * <p> msgName+holder 表示只接收发送者为holder的msgName的消息</p>
+ *
  * @author jiangguangtao
  */
 public class SimpleMessageCenter {
@@ -100,15 +101,15 @@ public class SimpleMessageCenter {
      * @param msgName    监听的消费类型
      * @param holder     消息发送者标识
      * @param observerId 监听对象id
-     * @return true成功移除指定的监听对象；false没有此监听
+     * @return 1成功移除指定的监听对象；0没有此监听
      */
-    public boolean removeObserver(String msgName, Object holder, String observerId) {
+    public int removeObserver(String msgName, Object holder, String observerId) {
         String key = getObserverKey(msgName, holder);
         observerLock.lock();
         try {
             MyComboObserver comboObserver = messageObservers.get(key);
             if (null == comboObserver) {
-                return false;
+                return 0;
             }
             return comboObserver.removeObserver(observerId);
         } finally {
@@ -121,14 +122,19 @@ public class SimpleMessageCenter {
      *
      * @param msgName 消息名称
      * @param holder  消息发送者标识
-     * @return true 有监听并且成功移除；false无监听
+     * @return 成功移除的监听数
      */
-    public boolean removeAllObserver(String msgName, Object holder) {
+    public int removeAllObserver(String msgName, Object holder) {
         String key = getObserverKey(msgName, holder);
         observerLock.lock();
         try {
-            MyComboObserver remove = messageObservers.remove(key);
-            return null != remove;
+            MyComboObserver removed = messageObservers.remove(key);
+            if (null == removed) {
+                return 0;
+            }
+            int size = removed.size();
+            removed.clear();
+            return size;
         } finally {
             observerLock.unlock();
         }
@@ -140,20 +146,22 @@ public class SimpleMessageCenter {
      * @param holder
      * @return 是否成功移除了
      */
-    public boolean removeObserversByHolder(Object holder) {
+    public int removeObserversByHolder(Object holder) {
         String suffix = getHolderSuffix(holder);
         if ("*".equals(suffix)) {
-            return false;
+            return 0;
         }
         String keySuffix = "@" + suffix;
-        boolean resultFlag = false;
         observerLock.lock();
+        int count = 0;
         try {
             List<String> keySet = new ArrayList<>(messageObservers.keySet());
             for (String key : keySet) {
                 if (key.startsWith(KEY_PREFIX) && key.endsWith(keySuffix)) {
-                    if (null != messageObservers.remove(key)) {
-                        resultFlag = true;
+                    MyComboObserver removed = messageObservers.remove(key);
+                    if (null != removed) {
+                        count += removed.size();
+                        removed.clear();
                     }
                 }
             }
@@ -161,7 +169,7 @@ public class SimpleMessageCenter {
             observerLock.unlock();
         }
 
-        return resultFlag;
+        return count;
     }
 
 
@@ -170,10 +178,10 @@ public class SimpleMessageCenter {
      *
      * @param msgName 消息名称
      * @param holder  消息发送者标识 可以为null
-     * @return true发送成功，并有消费者处理
+     * @return 成功发送到监听者数量
      */
-    public boolean postMessage(String msgName, Object holder) {
-        return postMessage(msgName, holder, new HashMap());
+    public int postMessage(String msgName, Object holder) {
+        return postMessage(msgName, holder, null);
     }
 
     /**
@@ -185,30 +193,34 @@ public class SimpleMessageCenter {
      * @param msgName  消息名称
      * @param holder   消息发送者标识 可以为null
      * @param userInfo 附加信息
-     * @return true发送成功，并有消费者处理
+     * @return 成功发送到监听者数量
      */
-    public boolean postMessage(String msgName, Object holder, Map userInfo) {
+    public int postMessage(String msgName, Object holder, Map<String, Object> userInfo) {
         String key = getObserverKey(msgName, holder);
         MyComboObserver directObserver = messageObservers.get(key);
 
-        boolean directFlag = false;
+        if (null == userInfo) {
+            userInfo = new HashMap<>(1);
+        }
+
+        int count = 0;
         if (null != directObserver) {
-            directFlag = directObserver.postMessage(msgName, holder, userInfo);
+            count = directObserver.postMessage(msgName, holder, userInfo);
         }
 
         String fuzzyKey = getFuzzyObserverKey(msgName, holder);
         if (null == fuzzyKey) {
-            return directFlag;
+            return count;
         }
 
         MyComboObserver fuzzyObserver = messageObservers.get(fuzzyKey);
         if (null == fuzzyObserver) {
-            return directFlag;
+            return count;
         }
 
-        boolean fuzzyFlag = fuzzyObserver.postMessage(msgName, holder, userInfo);
+        count += fuzzyObserver.postMessage(msgName, holder, userInfo);
 
-        return directFlag || fuzzyFlag;
+        return count;
     }
 
     /**

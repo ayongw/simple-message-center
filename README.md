@@ -38,3 +38,9 @@ SimpleMessageCenter
     .getDefaultCenter()
     .postMessage("demo.msg", null, new HashMap());
 ```
+
+
+## 更新说明
+1.2.1 
+    1. 操作结果返回数值，表示影响的数量
+    2. userInfo结果添加类型，Map<String, Object>

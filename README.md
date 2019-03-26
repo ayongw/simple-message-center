@@ -3,7 +3,7 @@
     
     发布Jar没有任何第三方依赖，简单直接使用
     
-    当前版本号 1.1.0    
+    当前版本号 1.2.0    
     
     
 ## 使用方法
@@ -13,12 +13,12 @@ maven方式
 <dependency>
   <groupId>com.github.ayongw</groupId>
   <artifactId>simple-message-center</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
 </dependency>
 ```
 Gradle Groovy DSL
 ```
-implementation 'com.github.ayongw:simple-message-center:1.1.0'
+implementation 'com.github.ayongw:simple-message-center:1.2.0'
 ```
 其它使用方式请在<https://search.maven.org>查询后使用。
 

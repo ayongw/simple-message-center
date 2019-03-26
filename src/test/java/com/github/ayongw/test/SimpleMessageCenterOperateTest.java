@@ -23,6 +23,8 @@ public class SimpleMessageCenterOperateTest {
     public void testAddOrRemove() {
 
         SimpleMessageCenter defaultCenter = SimpleMessageCenter.getDefaultCenter();
+        int rc = defaultCenter.removeObserversByHolder(holder);
+        logger.info("前置移除数量{}", rc);
 
         defaultCenter.addObserver(msgName, holder, new SimpleMessageObserver() {
             @Override

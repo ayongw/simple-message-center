@@ -3,9 +3,12 @@ package com.github.ayongw.simplemessagecenter;
 import com.github.ayongw.simplemessagecenter.inner.MyComboObserver;
 import com.github.ayongw.simplemessagecenter.inner.MyMessageObserverWrapper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 消息通知中心类
@@ -13,10 +16,14 @@ import java.util.UUID;
  * <p> msgName+holder 表示只接收发送者为holder的msgName的消息</p>
  */
 public class SimpleMessageCenter {
+    private static final String KEY_PREFIX = "sok:";
+
     // 事件-->事件监听列表
     private Map<String, MyComboObserver> messageObservers = new HashMap<>();
 
     private static SimpleMessageCenter defaultCenter;
+
+    private ReentrantLock observerLock = new ReentrantLock();
 
     private SimpleMessageCenter() {
 
@@ -70,12 +77,17 @@ public class SimpleMessageCenter {
         String id = UUID.randomUUID().toString();
         MyMessageObserverWrapper mmow = new MyMessageObserverWrapper(id, messageObserver);
 
-        MyComboObserver comboObserver = messageObservers.get(key);
-        if (null == comboObserver) {
-            comboObserver = new MyComboObserver(mmow);
-            messageObservers.put(key, comboObserver);
-        } else {
-            comboObserver.addObserver(mmow);
+        observerLock.lock();
+        try {
+            MyComboObserver comboObserver = messageObservers.get(key);
+            if (null == comboObserver) {
+                comboObserver = new MyComboObserver(mmow);
+                messageObservers.put(key, comboObserver);
+            } else {
+                comboObserver.addObserver(mmow);
+            }
+        } finally {
+            observerLock.unlock();
         }
 
         return id;
@@ -91,11 +103,16 @@ public class SimpleMessageCenter {
      */
     public boolean removeObserver(String msgName, Object holder, String observerId) {
         String key = getObserverKey(msgName, holder);
-        MyComboObserver comboObserver = messageObservers.get(key);
-        if (null == comboObserver) {
-            return false;
+        observerLock.lock();
+        try {
+            MyComboObserver comboObserver = messageObservers.get(key);
+            if (null == comboObserver) {
+                return false;
+            }
+            return comboObserver.removeObserver(observerId);
+        } finally {
+            observerLock.unlock();
         }
-        return comboObserver.removeObserver(observerId);
     }
 
     /**
@@ -107,8 +124,43 @@ public class SimpleMessageCenter {
      */
     public boolean removeAllObserver(String msgName, Object holder) {
         String key = getObserverKey(msgName, holder);
-        MyComboObserver remove = messageObservers.remove(key);
-        return null != remove;
+        observerLock.lock();
+        try {
+            MyComboObserver remove = messageObservers.remove(key);
+            return null != remove;
+        } finally {
+            observerLock.unlock();
+        }
+    }
+
+    /**
+     * 一次移除holder对象上的所有监听，但不支持移除全部（holder为null）
+     *
+     * @param holder
+     * @return 是否成功移除了
+     */
+    public boolean removeObserversByHolder(Object holder) {
+        String suffix = getHolderSuffix(holder);
+        if ("*".equals(suffix)) {
+            return false;
+        }
+        String keySuffix = "@" + suffix;
+        boolean resultFlag = false;
+        observerLock.lock();
+        try {
+            List<String> keySet = new ArrayList<>(messageObservers.keySet());
+            for (String key : keySet) {
+                if (key.startsWith(KEY_PREFIX) && key.endsWith(keySuffix)) {
+                    if (null != messageObservers.remove(key)) {
+                        resultFlag = true;
+                    }
+                }
+            }
+        } finally {
+            observerLock.unlock();
+        }
+
+        return resultFlag;
     }
 
 
@@ -188,26 +240,35 @@ public class SimpleMessageCenter {
      */
     private String getObserverKey(String msgName, Object holder) {
         StringBuilder sb = new StringBuilder();
-        sb.append("sok:").append(msgName).append("@");
-        if (null == holder) {
-            sb.append("*");
-        } else {
+        sb.append(KEY_PREFIX).append(msgName).append("@");
+        sb.append(getHolderSuffix(holder));
+        return sb.toString();
+    }
 
+    /**
+     * 获取holder对象在监听key上的后缀名称
+     *
+     * @param holder
+     * @return 如果为null或者空，返回*
+     */
+    private String getHolderSuffix(Object holder) {
+        if (null == holder) {
+            return "*";
+        } else {
             if (Class.class.isAssignableFrom(holder.getClass())) {
                 Class clazz = (Class) holder;
-                sb.append(clazz.getName());
+                return clazz.getName();
             } else if (CharSequence.class.isAssignableFrom(holder.getClass())) {
                 String str = holder.toString();
                 if (SimpleUtils.isBlank(str)) {
-                    sb.append("*");
+                    return "*";
                 } else {
-                    sb.append(str);
+                    return str;
                 }
             } else {
                 throw new IllegalArgumentException("holder只能是class或者string");
             }
         }
-        return sb.toString();
     }
 
 }
